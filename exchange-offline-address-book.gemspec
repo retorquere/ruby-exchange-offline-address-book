@@ -1,10 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require "exchange-offline-address-book/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "exchange-offline-address-book"
-  spec.version       = '0.0.1'
+  spec.version       = OfflineAddressBook::VERSION
   spec.authors       = ["Emiliano Heyns"]
   spec.email         = ["Emiliano.Heyns@iris-advies.com"]
   spec.description   = %q{Get Exchange Offline Address Book}
