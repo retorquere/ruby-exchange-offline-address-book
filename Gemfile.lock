@@ -1,0 +1,50 @@
+PATH
+  remote: .
+  specs:
+    exchange-offline-address-book (0.0.1)
+      autodiscover (~> 1)
+      curb (~> 0.9)
+      libmspack (~> 0.1)
+      nokogiri (~> 1.8)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    autodiscover (1.0.2)
+      httpclient
+      logging
+      nokogiri
+      nori
+    curb (0.9.3)
+    dotenv (2.2.1)
+    ffi (1.9.18)
+    ffi-compiler2 (2.0.0)
+      ffi (>= 1.0.0)
+      rake
+    httpclient (2.8.3)
+    libmspack (0.1.0)
+      ffi
+      ffi-compiler2 (>= 2.0.0)
+    little-plugger (1.1.4)
+    logging (2.2.2)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.10)
+    mini_portile2 (2.2.0)
+    minitest (5.10.2)
+    multi_json (1.12.1)
+    nokogiri (1.8.0)
+      mini_portile2 (~> 2.2.0)
+    nori (2.6.0)
+    rake (12.0.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler (~> 1.3)
+  dotenv (~> 2)
+  exchange-offline-address-book!
+  minitest (~> 5)
+
+BUNDLED WITH
+   1.15.1
