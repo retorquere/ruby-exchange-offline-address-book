@@ -11,7 +11,8 @@ end
 desc 'Run tests'
 task :default => :test
 
-task :release do
+task :pbump do
   sh "bump patch --tag"
-  Rake::Task["release"].clear
 end
+
+Rake::Task[:release].enhance([:pbump])
