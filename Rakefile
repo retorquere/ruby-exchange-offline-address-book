@@ -14,5 +14,3 @@ task :default => :test
 task :pbump do
   sh "bump patch --tag"
 end
-
-Rake::Task['release'].enhance([:pbump])
