@@ -11,7 +11,7 @@ end
 desc 'Run tests'
 task :default => :test
 
-task :newrelease do
+task :release do
   sh "bump patch --tag"
-  sh "rake release"
+  Rake::Task["release"].clear
 end

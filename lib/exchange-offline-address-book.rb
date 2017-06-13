@@ -73,9 +73,7 @@ class OfflineAddressBook
           oab = Tempfile.new('oab').path
         end
 
-        puts 'decompressing'
         LibMsPack.oab_decompress(lzx, oab)
-        puts 'done'
       end
 
       oab
