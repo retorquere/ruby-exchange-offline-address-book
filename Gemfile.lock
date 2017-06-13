@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    exchange-offline-address-book (0.0.6)
+    exchange-offline-address-book (0.0.7)
       autodiscover (~> 1)
       curb (~> 0.9)
       libmspack (~> 0.1)
