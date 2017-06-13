@@ -15,12 +15,14 @@ GEM
       logging
       nokogiri
       nori
+    bump (0.5.3)
     curb (0.9.3)
     dotenv (2.2.1)
     ffi (1.9.18)
     ffi-compiler2 (2.0.0)
       ffi (>= 1.0.0)
       rake
+    gem-release (1.0.0)
     httpclient (2.8.3)
     libmspack (0.1.0)
       ffi
@@ -41,9 +43,11 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bump (~> 0.5)
   bundler (~> 1.3)
   dotenv (~> 2)
   exchange-offline-address-book!
+  gem-release (~> 1)
   minitest (~> 5)
 
 BUNDLED WITH
