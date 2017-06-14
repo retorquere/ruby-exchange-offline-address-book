@@ -32,6 +32,8 @@ class OfflineAddressBook
     client.password = @password
     client.perform
 
+    raise client.status unless client.response_code.to_s[0] == '2'
+
     return client.body_str if target.nil?
 
     open(target, 'wb'){|f| f.write(client.body_str) }
