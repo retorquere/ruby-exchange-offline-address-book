@@ -16,12 +16,13 @@ require_relative 'exchange-offline-address-book/parser'
 require_relative 'exchange-offline-address-book/mspack'
 
 class OfflineAddressBook
-  def initialize(email: nil, password: nil, username: nil, cachedir: nil, update: true)
+  def initialize(email: nil, password: nil, username: nil, cachedir: nil, baseurl: nil, update: true)
     @email = email
     @username = username || email
     @password = password
     @cachedir = cachedir
     @update = update
+    @baseurl = baseurl
   end
 
   def download(file, target = nil)
