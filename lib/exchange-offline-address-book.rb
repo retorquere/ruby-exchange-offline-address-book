@@ -3,15 +3,15 @@
 require 'dotenv/load'
 
 require 'autodiscover'
-#require "autodiscover/debug"
 
+require "autodiscover/debug" if ENV['DEBUG']
 require 'yaml'
 require 'nokogiri'
 require 'tempfile'
 require 'json'
 require 'ostruct'
+require 'shellwords'
 
-require 'curb'
 require_relative 'exchange-offline-address-book/parser'
 require_relative 'exchange-offline-address-book/mspack'
 
@@ -25,18 +25,16 @@ class OfflineAddressBook
     @baseurl = baseurl
   end
 
-  def download(file, target = nil)
-    client = Curl::Easy.new(baseurl + file)
-    client.http_auth_types = :ntlm
-    client.username = @username
-    client.password = @password
-    client.perform
+  def path(name)
+    @files ||= {}
+    @files[name] ||= (@cachedir ? File.join(@cachedir, name) : Tempfile.new(name).path)
+  end
 
-    raise client.status unless client.response_code.to_s[0] == '2'
-
-    return client.body_str if target.nil?
-
-    open(target, 'wb'){|f| f.write(client.body_str) }
+  def download(name)
+    if !@cachedir || @update || !File.file?(path(name))
+      system "curl --#{ENV['DEBUG'] ? 'verbose' : 'silent'} --ntlm --user #{[@username, @password].join(':').shellescape} #{[baseurl, name].join('').shellescape} -o #{path(name).shellescape}"
+    end
+    return path(name)
   end
 
   def baseurl
@@ -56,35 +54,26 @@ class OfflineAddressBook
         lzx = File.basename(oab, File.extname(oab)) + '.lzx' if oab
       end
 
-      lzx ||= Nokogiri::XML(download('oab.xml')).at('//Full').inner_text
+      lzx ||= Nokogiri::XML(open(download('oab.xml'))).at('//Full').inner_text
       oab = File.basename(lzx, File.extname(lzx)) + '.oab'
 
-      if @cachedir && File.file?(File.join(@cachedir, oab))
-        oab = File.join(@cachedir, oab)
-      else
+      if !File.file?(path(oab))
         if @cachedir
           %w{*.oab *.lzx *.yml *.json}.each{|ext|
             Dir[File.join(@cachedir, ext)].each{|f| File.unlink(f) }
           }
-          download(lzx, File.join(@cachedir, lzx))
-          lzx = File.join(@cachedir, lzx)
-          @oab = File.join(@cachedir, oab)
-        else
-          _lzx = Tempfile.new('lzx')
-          download(lzx, _lzx.path)
-          lzx = _lzx.path
-          oab = Tempfile.new('oab').path
         end
 
-        LibMsPack.oab_decompress(lzx, oab)
+        download(lzx)
+        LibMsPack.oab_decompress(path(lzx), path(oab))
       end
 
-      oab
+      path(oab)
     end
   end
 
   def cache
-    @cache ||= File.join(File.dirname(addressbook), File.basename(addressbook, File.extname(addressbook)) + '.json')
+    @cache ||= path(File.basename(addressbook, File.extname(addressbook)) + '.json')
   end
 
   def header
