@@ -4,6 +4,7 @@ PATH
     exchange-offline-address-book (0.0.17)
       autodiscover (~> 1)
       curb (~> 0.9)
+      hashie
       libmspack (~> 0.1)
       nokogiri (~> 1.8)
 
@@ -23,6 +24,7 @@ GEM
       ffi (>= 1.0.0)
       rake
     gem-release (1.0.0)
+    hashie (3.5.5)
     httpclient (2.8.3)
     libmspack (0.1.0)
       ffi

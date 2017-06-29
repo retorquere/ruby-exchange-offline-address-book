@@ -8,12 +8,23 @@ require "autodiscover/debug" if ENV['DEBUG']
 require 'yaml'
 require 'nokogiri'
 require 'json'
-require 'ostruct'
+require 'hashie'
 require 'shellwords'
 require 'tmpdir'
 
 require_relative 'exchange-offline-address-book/parser'
 require_relative 'exchange-offline-address-book/mspack'
+
+# https://github.com/intridea/hashie/pull/416
+if Hashie::VERSION == '3.5.5'
+  module Hashie
+    class Mash
+      def self.disable_warnings?
+        @disable_warnings ||= false
+      end
+    end
+  end
+end
 
 class OfflineAddressBook
   def initialize(email: nil, password: nil, username: nil, cachedir: nil, baseurl: nil, update: true)
@@ -52,7 +63,7 @@ class OfflineAddressBook
       @dir = dir
 
       if File.file?(cache)
-        @records = JSON.parse(open(cache).read).collect{|record| OpenStruct.new(record) } # move to hashie::mash
+        @records = JSON.parse(open(cache).read, object_class: Hashie::Mash)
         return
       end
 

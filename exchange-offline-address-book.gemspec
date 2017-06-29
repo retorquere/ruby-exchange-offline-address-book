@@ -29,4 +29,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'autodiscover', '~> 1'
   spec.add_runtime_dependency 'libmspack', '~> 0.1'
   spec.add_runtime_dependency 'curb', '~> 0.9'
+  spec.add_runtime_dependency 'hashie'
 end

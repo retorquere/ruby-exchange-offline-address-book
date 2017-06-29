@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-require 'ostruct'
+require 'hashie'
 
-MapiPropertyDataType = OpenStruct.new({
+MapiPropertyDataType = Hashie::Mash.new({
   Unspecified: 0,
   Null: 1,
   Short: 2,
@@ -648,7 +648,7 @@ class OfflineAddressBook
     def _propertyTypes
       n = _uint32
       return 1.upto(n).collect{|i|
-        prop = OpenStruct.new
+        prop = Hashie::Mash.new
         prop.pos = pos
   
         id = _uint32
@@ -689,12 +689,12 @@ class OfflineAddressBook
       else
         value = _scalar(prop.type)
       end
-      p = OpenStruct.new(type: prop.type, id: prop.id, name: prop.name, value: value)
+      p = Hashie::Mash.new(type: prop.type, id: prop.id, name: prop.name, value: value)
       return p
     end
   
     def _scalar(type)
-      case type
+      case type.to_sym
         when :Long    then return _integer
         when :Boolean then return (_ubyte > 0)
         when :Binary  then return @oab.read(_integer)
@@ -713,7 +713,7 @@ class OfflineAddressBook
     def _record(headerRecord = false)
       initialPosition = @oab.pos
       recordSize = 0
-      record = OpenStruct.new
+      record = Hashie::Mash.new
       begin
         properties = headerRecord ? @headerProperties : @oabProperties
         recordSize = _uint32
