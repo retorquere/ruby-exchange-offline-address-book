@@ -27,7 +27,16 @@ class OfflineAddressBook
 
   def path(name)
     @files ||= {}
-    @files[name] ||= (@cachedir ? File.join(@cachedir, name) : Tempfile.new(name).path)
+    @files[name] ||= begin
+      if @cachedir
+        File.join(@cachedir, name)
+      else
+        tmp = Tempfile.new(name).path
+        File.delete(tmp)
+        tmp
+      end
+    end
+    @files[name]
   end
 
   def download(name)

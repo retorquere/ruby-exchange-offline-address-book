@@ -16,4 +16,8 @@ class EOABTest < Minitest::Test
     oab = OfflineAddressBook.new(username: ENV['EWS_USERNAME'], password: ENV['EWS_PASSWORD'], email: ENV['EWS_EMAIL'], baseurl: ENV['EWS_BASEURL'])
     puts oab.addressbook
   end
+  def test_records
+    oab = OfflineAddressBook.new(username: ENV['EWS_USERNAME'], password: ENV['EWS_PASSWORD'], email: ENV['EWS_EMAIL'])
+    puts oab.records.length
+  end
 end
