@@ -7,10 +7,10 @@ require 'autodiscover'
 require "autodiscover/debug" if ENV['DEBUG']
 require 'yaml'
 require 'nokogiri'
-require 'tempfile'
 require 'json'
 require 'ostruct'
 require 'shellwords'
+require 'tmpdir'
 
 require_relative 'exchange-offline-address-book/parser'
 require_relative 'exchange-offline-address-book/mspack'
@@ -23,28 +23,15 @@ class OfflineAddressBook
     @cachedir = cachedir
     @update = update
     @baseurl = baseurl
+
+    if cachedir
+      fetch_to(cachedir)
+    else
+      Dir.mktmpdir{|dir| fetch_to(dir) }
+    end
   end
 
-  def path(name)
-    @files ||= {}
-    @files[name] ||= begin
-      if @cachedir
-        File.join(@cachedir, name)
-      else
-        tmp = Tempfile.new(name).path
-        File.delete(tmp)
-        tmp
-      end
-    end
-    @files[name]
-  end
-
-  def download(name)
-    if !@cachedir || @update || !File.file?(path(name))
-      system "curl --#{ENV['DEBUG'] ? 'verbose' : 'silent'} --ntlm --user #{[@username, @password].join(':').shellescape} #{[baseurl, name].join('').shellescape} -o #{path(name).shellescape}"
-    end
-    return path(name)
-  end
+  attr_reader :records
 
   def baseurl
     @baseurl ||= begin
@@ -55,59 +42,70 @@ class OfflineAddressBook
     end
   end
 
-  def addressbook
-    @addressbook ||= begin
-      lzx = nil
-      if !@update & @cachedir
-        oab = Dir[File.join(@cachedir, '*.oab')][0]
-        lzx = File.basename(oab, File.extname(oab)) + '.lzx' if oab
-      end
-
-      lzx ||= Nokogiri::XML(open(download('oab.xml'))).at('//Full').inner_text
-      oab = File.basename(lzx, File.extname(lzx)) + '.oab'
-
-      if !File.file?(path(oab))
-        if @cachedir
-          %w{*.oab *.lzx *.yml *.json}.each{|ext|
-            Dir[File.join(@cachedir, ext)].each{|f| File.unlink(f) }
-          }
-        end
-
-        download(lzx)
-        LibMsPack.oab_decompress(path(lzx), path(oab))
-      end
-
-      path(oab)
-    end
-  end
-
-  def cache
-    @cache ||= path(File.basename(addressbook, File.extname(addressbook)) + '.json')
-  end
-
   def header
     @parsed ||= Parser.new(addressbook)
     @parsed.header
   end
 
-  def records
-    @records ||= begin
+  def fetch_to(dir)
+    begin
+      @dir = dir
+
       if File.file?(cache)
-        parsed = JSON.parse(open(cache).read).collect{|record| OpenStruct.new(record) }
-      else
-        @parsed ||= Parser.new(addressbook)
-        parsed = @parsed.records.collect{|record|
-          record.to_h.each_pair{|k, v|
-            record[k] = v[0] if v.length == 1
-          }
-          # no idea what's going on here
-          record.AddressBookObjectGuid = record.AddressBookObjectGuid.inspect if record.AddressBookObjectGuid
-          record
-        }
-        open(cache, 'w'){|f| f.write(JSON.pretty_generate(parsed.collect{|r| r.to_h}))} if @cachedir
+        @records = JSON.parse(open(cache).read).collect{|record| OpenStruct.new(record) } # move to hashie::mash
+        return
       end
 
-      parsed
+      if !File.file?(addressbook)
+        %w{json oab lzx}.each{|ext|
+          Dir[File.join(@dir, "*.#{ext}")].each{|f| File.delete(f) }
+        }
+        lzx = File.basename(addressbook, File.extname(addressbook)) + '.lzx'
+        puts "OfflineAddressBook: Downloading #{lzx}" if ENV['DEBUG']
+        download(lzx)
+        puts "OfflineAddressBook: Decompressing #{lzx} to #{addressbook}" if ENV['DEBUG']
+        LibMsPack.oab_decompress(File.join(@dir, lzx), addressbook)
+      end
+      puts "OfflineAddressBook: Addressbook ready at #{addressbook}" if ENV['DEBUG']
+
+      parsed = Parser.new(addressbook)
+      @records = parsed.records.collect{|record|
+        record.to_h.each_pair{|k, v|
+          record[k] = v[0] if v.length == 1
+        }
+        # no idea what's going on here
+        record.AddressBookObjectGuid = record.AddressBookObjectGuid.inspect if record.AddressBookObjectGuid
+        record
+      }
+      open(cache, 'w'){|f| f.write(JSON.pretty_generate(@records.collect{|r| r.to_h}))} if @cachedir # this can ditch the collect with hashie
+    ensure
+      @dir = nil
     end
+  end
+
+  private
+
+  def download(name)
+    puts "curl --#{ENV['DEBUG'] ? 'verbose' : 'silent'} --ntlm --user #{[@username, @password].join(':').shellescape} #{[baseurl, name].join('').shellescape} -o #{File.join(@dir, name).shellescape}" if ENV['DEBUG']
+    system "curl --#{ENV['DEBUG'] ? 'verbose' : 'silent'} --ntlm --user #{[@username, @password].join(':').shellescape} #{[baseurl, name].join('').shellescape} -o #{File.join(@dir, name).shellescape}"
+    return File.join(@dir, name)
+  end
+
+  def addressbook
+    @addressbook ||= begin
+      if !@update && Dir[File.join(@dir, '*.oab')].length > 0
+        oab = File.basename(Dir[File.join(@dir, '*.oab')][0])
+        puts "OfflineAddressBook: Reusing #{oab}" if ENV['DEBUG']
+      else
+        lzx = Nokogiri::XML(open(download('oab.xml'))).at('//Full').inner_text
+        oab = File.basename(lzx, File.extname(lzx)) + '.oab'
+      end
+
+      File.join(@dir, oab)
+    end
+  end
+
+  def cache
+    @cache ||= File.join(@dir, File.basename(addressbook, File.extname(addressbook)) + '.json')
   end
 end
