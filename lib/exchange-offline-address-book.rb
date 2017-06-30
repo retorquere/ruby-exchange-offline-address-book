@@ -59,6 +59,10 @@ module Exchange
         open(cache, 'w'){|f| f.write(JSON.pretty_generate(@records)) }
       end
 
+      def cache
+        @cache ||= File.join(@dir || @cachedir, File.basename(addressbook, File.extname(addressbook)) + '.json')
+      end
+
       private
 
       def fetch_to(dir)
@@ -115,10 +119,6 @@ module Exchange
 
           File.join(@dir, oab)
         end
-      end
-
-      def cache
-        @cache ||= File.join(@dir, File.basename(addressbook, File.extname(addressbook)) + '.json')
       end
     end
 
