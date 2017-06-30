@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    exchange-offline-address-book (0.0.20)
+    exchange-offline-address-book (0.0.21)
       autodiscover (~> 1)
       curb (~> 0.9)
       hashie
