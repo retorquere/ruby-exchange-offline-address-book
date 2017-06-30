@@ -49,12 +49,24 @@ module Exchange
         @parsed.header
       end
 
+      def load(file)
+        raise "Not loading temporary file" unless @cachedir
+        @records = JSON.parse(open(file).read, object_class: Exchange::OfflineAddressBook::Record)
+      end
+
+      def save(file)
+        raise "Not saving to temporary file" unless @cachedir
+        open(cache, 'w'){|f| f.write(JSON.pretty_generate(@records)) }
+      end
+
+      private
+
       def fetch_to(dir)
         begin
           @dir = dir
 
           if File.file?(cache)
-            @records = JSON.parse(open(cache).read, object_class: Exchange::OfflineAddressBook::Record)
+            load(cache)
             return
           end
 
@@ -79,13 +91,11 @@ module Exchange
             record.AddressBookObjectGuid = record.AddressBookObjectGuid.inspect if record.AddressBookObjectGuid
             record
           }
-          open(cache, 'w'){|f| f.write(JSON.pretty_generate(@records)) } if @cachedir
+          save(cache)
         ensure
           @dir = nil
         end
       end
-
-      private
 
       def download(name)
         puts "curl --#{ENV['DEBUG'] ? 'verbose' : 'silent'} --ntlm --user #{[@username, @password].join(':').shellescape} #{[baseurl, name].join('').shellescape} -o #{File.join(@dir, name).shellescape}" if ENV['DEBUG']
