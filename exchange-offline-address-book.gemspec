@@ -5,7 +5,7 @@ require "exchange-offline-address-book/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "exchange-offline-address-book"
-  spec.version       = OfflineAddressBook::VERSION
+  spec.version       = Exchange::OfflineAddressBook::VERSION
   spec.authors       = ["Emiliano Heyns"]
   spec.email         = ["Emiliano.Heyns@iris-advies.com"]
   spec.description   = %q{Get Exchange Offline Address Book}

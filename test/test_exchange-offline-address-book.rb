@@ -17,7 +17,7 @@ class EOABTest < Minitest::Test
 #    puts oab.addressbook
 #  end
   def test_records
-    oab = OfflineAddressBook.new(username: ENV['EWS_USERNAME'], password: ENV['EWS_PASSWORD'], email: ENV['EWS_EMAIL'])
+    oab = Exchange::OfflineAddressBook::AddressBook.new(username: ENV['EWS_USERNAME'], password: ENV['EWS_PASSWORD'], email: ENV['EWS_EMAIL'])
     puts oab.records.length
   end
 end
