@@ -88,7 +88,7 @@ class OfflineAddressBook
         record.AddressBookObjectGuid = record.AddressBookObjectGuid.inspect if record.AddressBookObjectGuid
         record
       }
-      open(cache, 'w'){|f| f.write(JSON.pretty_generate(@records.collect{|r| r.to_h}))} if @cachedir # this can ditch the collect with hashie
+      open(cache, 'w'){|f| f.write(JSON.pretty_generate(@records)) } if @cachedir
     ensure
       @dir = nil
     end
