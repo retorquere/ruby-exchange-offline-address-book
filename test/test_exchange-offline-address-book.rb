@@ -22,10 +22,14 @@ class EOABTest < Minitest::Test
 #    oab = Exchange::OfflineAddressBook::AddressBook.new(username: ENV['EWS_USERNAME'], password: ENV['EWS_PASSWORD'], email: ENV['EWS_EMAIL'])
 #    puts oab.records.length
 #  end
-  def test_cache
-    Dir.mktmpdir{|dir|
-      oab = Exchange::OfflineAddressBook::AddressBook.new(cachedir: dir, username: ENV['EWS_USERNAME'], password: ENV['EWS_PASSWORD'], email: ENV['EWS_EMAIL'])
-      puts oab.records.length
-    }
+#  def test_cache
+#    Dir.mktmpdir{|dir|
+#      oab = Exchange::OfflineAddressBook::AddressBook.new(cachedir: dir, username: ENV['EWS_USERNAME'], password: ENV['EWS_PASSWORD'], app_password: ENV['EWS_APP_PASSWORD'], email: ENV['EWS_EMAIL'])
+#      puts oab.records.length
+#    }
+#  end
+  def test_debug
+    oab = Exchange::OfflineAddressBook::AddressBook.new(cachedir: 'tmp', username: ENV['EWS_USERNAME'], password: ENV['EWS_PASSWORD'], app_password: ENV['EWS_APP_PASSWORD'], email: ENV['EWS_EMAIL'])
+    puts oab.records.length
   end
 end
